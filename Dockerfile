@@ -1,11 +1,26 @@
-# build stage
-FROM golang:1.9.3-alpine3.7
-
-ADD . /go/src/github.com/banzaicloud/preemption-exporter
-WORKDIR /go/src/github.com/banzaicloud/preemption-exporter
-RUN go build -o /bin/preemption-exporter .
-
 FROM alpine:latest
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
-COPY --from=0 /bin/preemption-exporter /bin
-ENTRYPOINT ["/bin/preemption-exporter"]
+
+RUN apk add --no-cache git make musl-dev go
+
+# Configure Go
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
+
+RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
+
+# Install Glide
+RUN go get -u github.com/Masterminds/glide/...
+
+
+
+RUN go get github.com/prometheus/promu
+RUN go get github.com/mcmarkj/preemption-exporter
+WORKDIR /root/
+
+COPY . /root/
+
+RUN promu build
+
+
+ENTRYPOINT ["/root/preemption-exporter"]
