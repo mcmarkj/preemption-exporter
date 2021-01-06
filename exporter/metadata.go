@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/shirou/gopsutil/host"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +17,6 @@ type terminationExporter struct {
 	metadataEndpoint     string
 	scrapeSuccessful     *prometheus.Desc
 	terminationIndicator *prometheus.Desc
-	terminationTime      *prometheus.Desc
 }
 
 func NewPreemptionExporter(me string) *terminationExporter {
@@ -37,7 +35,6 @@ func NewPreemptionExporter(me string) *terminationExporter {
 		metadataEndpoint:     me,
 		scrapeSuccessful:     prometheus.NewDesc("gcp_instance_metadata_service_available", "Metadata service available", []string{"instance_id", "instance_name"}, nil),
 		terminationIndicator: prometheus.NewDesc("gcp_instance_termination_imminent", "Instance is about to be terminated", []string{"instance_id", "instance_name"}, nil),
-		terminationTime:      prometheus.NewDesc("gcp_instance_termination_in", "Instance will be terminated in", []string{"instance_id", "instance_name"}, nil),
 	}
 }
 
@@ -65,9 +62,8 @@ func (c *terminationExporter) get(path string) (string, error) {
 func (c *terminationExporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.scrapeSuccessful
 	ch <- c.terminationIndicator
-	ch <- c.terminationTime
 }
-
+go
 func (c *terminationExporter) Collect(ch chan<- prometheus.Metric) {
 	var preemptedValue float64
 	log.Info("Fetching termination data from metadata-service")
@@ -95,7 +91,4 @@ func (c *terminationExporter) Collect(ch chan<- prometheus.Metric) {
 		preemptedValue = 1.0
 	}
 	ch <- prometheus.MustNewConstMetric(c.terminationIndicator, prometheus.GaugeValue, preemptedValue, instanceID, instanceName)
-	uptime, _ := host.Uptime()
-	log.Infof("instance was started at : %v", uptime)
-	ch <- prometheus.MustNewConstMetric(c.terminationTime, prometheus.GaugeValue, float64(uptime), instanceID, instanceName)
 }

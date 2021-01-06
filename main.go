@@ -7,11 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus"
 	exp "github.com/banzaicloud/preemption-exporter/exporter"
-
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -35,7 +34,9 @@ func main() {
 	log.Info("Starting preemption-exporter")
 
 	log.Debug("registering preemption exporter")
+
 	prometheus.MustRegister(exp.NewPreemptionExporter(*metadataEndpoint))
+	prometheus.Unregister(prometheus.NewGoCollector())
 
 	go serveMetrics()
 
