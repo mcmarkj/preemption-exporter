@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	exp "github.com/banzaicloud/preemption-exporter/exporter"
+	exp "github.com/mcmarkj/preemption-exporter/exporter"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
